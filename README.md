@@ -20,11 +20,12 @@ Stages:
 1) STAGE 1
 
 I)Write a code that identify the 4 different ID Variants
+
 II) This code needs to avoid repetition in case one CSV input may have more than one ID in the same row.
 
 2) STAGE 2
 
-I) Identify which column has Gene and GRCh38 coordinates
+I) Identify which column has Gene and GRCh38 coordinates.
 To be able to correct Gene or coordinates, first we need a code that identify this values
 
 3) STAGE 3
@@ -41,6 +42,7 @@ I) Create a VCF with corrected data from the CSV.
 5) STAGE 5 
 
 I) Create a script that recognizes in CSV input and returns a VCF.
+
 II) The script could ask which genome you want to use GRCh38 /GRCh37. (BONUS).
 
 6) STAGE 6

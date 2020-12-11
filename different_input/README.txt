@@ -27,3 +27,6 @@ NM_000257.3:c.1988G>A                N.a                              NP_000248.
 A 5th CSV (called ALL) has been created that store all of these variants types. 
 This has been created to test the code when in a single CSV more than one
 variant type is stored.
+
+
+Files needs to be save as .csv extension. Otherwise 'UnicodeDecodeError: 'utf-8' codec can't decode byte 0xda in position 6: invalid    continuation byte'
