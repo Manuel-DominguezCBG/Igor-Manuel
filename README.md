@@ -32,7 +32,9 @@ To be able to correct Gene or coordinates, first we need a code that identify th
 
 I) Check if Gene and coordinates are correct according some uptodate database
 We will need to introduce error in this values.
+
 II) Create a document that inform which values were identify wrongly 
+
 III) Modify the incorretly values.
 
 4) STAGE 4
