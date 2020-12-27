@@ -19,37 +19,32 @@ Stages:
 
 1) STAGE 1
 
-I)Write a code that identify the 4 different ID Variants
+I) Write a code that identify 2 (if time maybe more) different ID Variants
 
 II) This code needs to avoid repetition in case one CSV input may have more than one ID in the same row.
 
+III) By using the variant ID, request Emsembl API to uptodate data.
+
+IV) In case a variant ID is unknown in the API, a exception avoid this issue
+
 2) STAGE 2
 
-I) Identify which column has Gene and GRCh38 coordinates.
-To be able to correct Gene or coordinates, first we need a code that identify this values
+I) Compare gene symbol and location between input and API
+
+II) Generater a txt file that informs where and what mismatchs has been found
+
 
 3) STAGE 3
 
-I) Check if Gene and coordinates are correct according some uptodate database
-We will need to introduce error in this values.
+I) Create a VCF file with data of the input plus from the API
 
-II) Create a document that inform which values were identify wrongly 
+4) STAGE 4 
 
-III) Modify the incorretly values.
+I) Put all together, create a script that taking a CSV file, generate the inform txt plus the VCF file
 
-4) STAGE 4
+5) STAGE 5
 
-I) Create a VCF with corrected data from the CSV.
-
-5) STAGE 5 
-
-I) Create a script that recognizes in CSV input and returns a VCF.
-
-II) The script could ask which genome you want to use GRCh38 /GRCh37. (BONUS).
-
-6) STAGE 6
-
-I) Create a interface that performs the same execution that stage 5.
+I) Create a interface that performs the same execution that stage 4.
 
 
 

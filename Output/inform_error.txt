@@ -1,0 +1,16 @@
+If you are reading this document is because some error(s) or mismatch(s) has been found between the Gene Symbol and/or the location of your variants
+When these has been compared with API Emsembl.
+We show you the differences found in this document.
+
+############# LOCATION'S MISMACHTS ############## 
+
+Number of location mismachts found: 1
+Your location     variant    API location
+77:43071077	rs1799966	17:43071077
+
+
+############# GENE_SYMBOL'S MISMACHTS #############
+
+Number of Gene Symbol mismachts found: 1
+Your Gene_symbol,     Variant,       API Gene_symbol
+BORIS	rs56116432	ABO
