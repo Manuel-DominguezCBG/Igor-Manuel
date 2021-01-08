@@ -2,8 +2,6 @@
 ###### Version 1.0
 ![image](https://drive.google.com/uc?export=view&id=1qTdMNRkowLjhYSBPqZSy3Lp6gcv4V-A_)
 
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
-
  Welcome to the script CSV2VCF-converter (version 1)                        
  A collaborative assessment of the module Introduction to Programming      
  By Igor Malashchuk and Manuel Dominguez  
