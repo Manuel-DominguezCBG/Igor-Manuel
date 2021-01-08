@@ -50,4 +50,15 @@ If you can read the content of the folder CSVtoVCF, that means you are in the ri
  - Finally, go to the output folder where you will see the VCF file and a html file informing you about errors found in your input
  
  
- 
+ ### Testing and issues.
+
+We need to speak here how we have test the code...
+
+If you find any issue running this programme, please let us know in [Github issues](https://github.com/Manuel-DominguezCBG/Igor-Manuel/issues) and we will try to help you. The same, if you have any idea or suggestion or you would like to join our team, contact with us. 
+
+
+
+
+License
+----
+
