@@ -48,3 +48,6 @@ If you can read the content of the folder CSVtoVCF, that means you are in the ri
  - We will create a CSV in the genome building you wish, so the second question we ask you is write a if you want the results in the genoma building GRCh38 - hg38 or b if you wish your coordinates results in Grch37. We will not change the variant ID, only the coordinates in the VCF.
  
  - Finally, go to the output folder where you will see the VCF file and a html file informing you about errors found in your input
+ 
+ 
+ 
