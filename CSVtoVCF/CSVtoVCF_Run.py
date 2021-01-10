@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 # coding: utf-8 
 
-# Let's import all modules used in this script:
+''' 
+Let's import all modules used in this script
+Our goal is that the costumer uses this script with the minimun
+intereaction with the terminal. For that reason, we have added 
+the next lines that install modules if required
 
-
+Note for next version: Instead of install modules, 
+create a new env could be more pythonic. 
+''' 
 import os
 import subprocess
 
@@ -23,22 +29,24 @@ import pandas as pd
 import numpy as np
 import inspect
 from datetime import date
-#from pathlib import Path
 import jinja2
-# For some reason requests did not work sometimes when testing our script in a new env
 import requests
 from liftover import get_lifter
 from Bio import Entrez, SeqIO
 
-# To make clear the interection user-cumputer
+'''
+To make clear the interection user-cumputer 
+User will be ask to download the folder called CSVtoVCF
+that contains the  CSVtoVCF_Run.py and a input and output folder
+The next lines take a csv file from the imput folder
+'''
 # Let´s delete one warning 
 warnings.filterwarnings("ignore")
-#################################################################################
 
-# Let's read input
+''' Read output '''
 # This read the file located in the folder input
 actual_path = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
-#(os.path.dirname(os.path.realpath('CSVtoVCFv3.py')))
+
 folder_input = '/input/'
 folder_output = '/output/'
 
@@ -47,17 +55,16 @@ input_file_name= ''.join(input_file_name)
 conv38to19 = get_lifter('hg38', 'hg19')
 
 CSV_input = actual_path+folder_input+input_file_name
-#COVERSHEET_TEMPLATE = actual_path+'/Lib/test_report_template.html'
 
 
-# input to data frame
+'''
+Now, we convert this input in a data frame 
+'''
+
 
 # To avoid UnicodeDecodeError: 'utf-8'
 with open(CSV_input, 'rb') as f:
     result = chardet.detect(f.read())
-
-#  This not work 100% of the times. To avoid UnicodeDecodeError: 'utf-8'
-# We strongly recommend that the input be .csv
 
 df = pd.read_csv(CSV_input, encoding=result['encoding'])
 
@@ -65,7 +72,12 @@ df = pd.read_csv(CSV_input, encoding=result['encoding'])
 df = df.rename(columns=str.upper)
 df_draft = df
 
-
+''' 
+The users will be asked to called GENE the columns that contains gene_symbol 
+and COORDINATES the column with the coordinates
+that way we can recognise this input
+In the next lines also, we ask what genome building is used in the input
+'''
 
 if bool("GENE" in df.columns) == True and bool("COORDINATES" in df.columns) == True:
     is_stage2 = 'YES'
@@ -109,7 +121,6 @@ def get_html_gdrive(ID):
     if token:
         params = { 'id' : ID, 'confirm' : token }
         response = session.get(URL, params = params, stream = True)
-    #response = response.iter_content(32768)
     return re.sub('[\r\t]','', response.text)
 def get_confirm_token(response):
     for key, value in response.cookies.items():
@@ -240,8 +251,11 @@ df_location = get_location(decoded, trans_df)
 
      # Always tell NCBI who you are
 
-# Call Entrez to retrieve sequence in fasta format
+
 def call_Entrez(chrom_ID, start, end, Entrez_ID):
+    '''
+    Call Entrez to retrieve sequence in fasta format
+    '''
     Entrez.email = Entrez_ID
     handle = Entrez.efetch(db="nucleotide", id=chrom_ID, rettype="fasta",strand=1,seq_start=start,seq_stop=end)
     record = SeqIO.read(handle, "fasta")
@@ -256,7 +270,6 @@ def stage1(decoded, df_location, Entrez_ID):
                    "17": "CM000679.2", "18": "CM000680.2", "19": "CM000681.2", "20": "CM000682.2",
                    "21": "CM000683.2", "22": "CM000684.2", "X": "CM000685.2", "Y": "CM000686.2",
                    "M": "MF737176", "MT": "MF737176"}
-    #column_names = ["Gene_API", 'CHROM', 'POS_HG38', 'POS_HG19', 'ID', 'REF', 'ALT', 'STRAND', 'QUAL', 'FILTER', 'INFO']
     column_names = ["Gene_API", 'CHROM', 'POS_HG38', 'POS_HG19', 'ID', 'REF', 'ALT', 'STRAND']
     df_stage1 = pd.DataFrame(columns=column_names)
     # extract specific data from API and data frame into new data frame
@@ -323,24 +336,14 @@ def stage1(decoded, df_location, Entrez_ID):
                 df_stage1.loc[i, 'REF'] = ref4_seq
                 df_stage1.loc[i, 'ALT'] = ref4_seq[0]
                 df_stage1.loc[i, 'POS_HG38'] = start - 1
-                #update_position2 = conv38to19[df_location.loc[i, 'CHROM']][(df_location.loc[i, 'POS_START'] + 1)]
-                #df_stage1.loc[i, 'POS_HG19'] = update_position2[0][1]
+                
             else:
                 df_stage1.loc[i, 'REF'] = ref3
                 df_stage1.loc[i, 'ALT'] = alt3
                 df_stage1.loc[i, 'POS_HG38'] = start
-            # For REFERENCE SEQUENCE
-            #df_stage1.loc[i, 'REF'] = "".join(complement[c] for c in ref2)[::-1]
-            # For Variant Sequence
-            #df_stage1.loc[i, 'ALT'] = "".join(complement[d] for d in alt2)[::-1]
+           
             df_stage1.loc[i, 'STRAND'] = '-'
-        # For ID
-
-    #df_stage1['ID'] = data_frame[["Transcript"]].copy()
-        # For Quality
-    #df_stage1['QUAL'] = data_frame[["Quality"]].copy()
-        # For Quality
-    #df_stage1['FILTER'] = data_frame[["Filter"]].copy()
+       
     return df_stage1
 
 
