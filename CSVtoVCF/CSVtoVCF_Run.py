@@ -30,7 +30,8 @@ import requests
 from liftover import get_lifter
 from Bio import Entrez, SeqIO
 
- 
+# To make clear the interection user-cumputer
+# Let´s delete one warning 
 warnings.filterwarnings("ignore")
 #################################################################################
 
