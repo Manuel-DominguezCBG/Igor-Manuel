@@ -73,8 +73,7 @@ This programme creates 2 files:
  ```
 We are followed the last recommendations of how a VCF must be created. This recommendation can be read  [here]((https://samtools.github.io/hts-specs/VCFv4.2.pdf).
 
- - A html file with errors found in the input such us genes names that do not match with the API requestes, errors found in the coordinates or when Emsembl API or our script do not recognise the variant ID. This document is self explanatory, however we provide here extra explanation.
-# This document inform first if your variants are been retrieved in the VEP API successfully (marked in green colour ), if the variant requested provided a error, this variant is marked in red and third, if the script doesn't recognise the variant ID, we are not able to request this variant, and it is marked in orange color.
+ - A html file with errors found in the input such us genes names that do not match with the API requestes, errors found in the coordinates or when Emsembl API or our script do not recognise the variant ID. This document is self explanatory, however we provide here extra explanation. This document inform first if your variants are been retrieved in the VEP API successfully (marked in green colour ), if the variant requested provided a error, this variant is marked in red and third, if the script doesn't recognise the variant ID, we are not able to request this variant, and it is marked in orange color.
 
 
 
