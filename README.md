@@ -18,7 +18,7 @@ Following the agile methology, this first version has been splited in a few stag
 ### Motivation 
 The motivation of this programme is to allow users without strong informatic background to convert variants stored in CSV files into VCF file. For this reason, our philosophy is to create a script as much flexible as possible trying to recognise the larges number of different variants ID. In this early version, 3 different variants ID are recognised (see details below), and the programme can be run by using the terminal of any Linux or Mac computer. Our aim is to keep working in this project (even if only at the beginning for a didactic objective) and be able of identify the vast majority of variants ID as well as recognise different input. This is important because we have seen how different clinical scientist store variant not only using different variant ID but also creating Excel files in different structure. Some don't create a column with gene symbol, column header can be called in many different ways, the order of the column can change, coordinates can be stores like chr3:123456 or like 3:123456. Our finall goal is to create an friendly interfae that recognise a great diversity of variants ID and different data frame. 
 
-### Installation and used
+### Installation and how to used
 
  - CSV2VCF requires any Linux or Mac OS distributions  and [Python 3](https://www.python.org/) to run.
 
@@ -54,14 +54,17 @@ If you can read the content of the folder CSVtoVCF, that means you are in the ri
 
 ### Development
 
-CSV2VCFv1 recognises 3 types of varioant ID
+1. CSV2VCFv1 recognises 3 types of varioant ID
 
  - dbsnp ID (i.e. rs12345)
  - HGVS notation coding such as AGT:c.803T>C or ESNT000000000304:c.1431_1433delTTC
 
  We are working on developing version 2 which will recognise genomic (:g.) HGVS notation.
 
- 
+2. Too much code in one script. For organization purposes and effectiveness, next approach will be split the code in different scripts.
+
+
+
  ### Testing and issues.
 
 We need to speak here how we have test the code...
