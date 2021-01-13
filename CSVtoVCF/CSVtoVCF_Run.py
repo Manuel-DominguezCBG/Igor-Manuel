@@ -362,6 +362,9 @@ def stage1(decoded, df_location, Entrez_ID):
 df_stage1 = stage1(decoded, df_location, Entrez_ID)
 
 def get_hg19(df):
+    """
+    This def converter the coordinates from genome building 39 to 19
+    """
     for index, row in df.iterrows():
         chrom = row['CHROM']
         if chrom == 'MT':
@@ -429,23 +432,12 @@ def gene_loc_error(html_file, location_error, gene_error):
     header_location = '<th class="col_heading level0 col0" >Your location</th> <th class="col_heading level0 col1" >Variant</th>  <th class="col_heading level0 col2" >API location</th>'
     html = html_file
 
-# Now with these dicts we can write the inform_error.txt
-# If both dicts are empty
-# then create the txt saying there is not error found
-# If one or both dict contain data
-# that means mismatch found in the input
-
-# Now the same with gene_symbol
-
-# Number of gene_symbol mismatchs
     how_many_GS_error = 'Number of Gene Symbol mismatch(s) found:', str(len(gene_error))
     how_many_GS_error = ' '.join(how_many_GS_error)
 
 # Now, show these mismatchs in this order
 
     header_gene_symbol = '<th class="col_heading level0 col0" >Your Gene_symbol</th> <th class="col_heading level0 col1" >Variant</th>  <th class="col_heading level0 col2" >API Gene_symbol</th>'
-
-
     location_title = "#####LOCATION'S MISMATCH(S) ###### \n\n"
     gene_title = "\n\n##### GENE_SYMBOL'S MISMATCH(S) #######\n\n"
 
@@ -532,14 +524,6 @@ if is_stage2 == 'NO':
         out.write(finished_html)
 
 
-
-
-
-
-
-
-
-
 # Introduce in name, the name of your new file
 name_of_VCF = "your_" + input_file_name + "_converted_into_VCF.vcf"
 
@@ -598,17 +582,27 @@ print('Have a look in the output folder')
 print('Your files are ready!')
 
 
-
-
-
 # TESTING #
 print("Running the test...\n")
-print("This test takes the results generated in the output VCF performs a new request in an different API. \n For a variant given If some of its results matched in both APIs, we asummed that this variant is correct.\n")
+
+
+print("This test takes the results generated in the output VCF and a performs a new request in an different API. \n For a variant given If some of its results matched in both APIs, we asummed that this variant is correct.\n")
 
 """
 To compare our results, the REF values generated in the Emsembl API 
 are compared with another API called MyVariantINFO.
 """
+
+# This API only work in GH19, so first we need to ensure that if the costumer uses the building 38, we convert the coordinates 
+
+if df_stage3.columns[1] == 'POS_HG38':
+    for index, row in df_stage3.iterrows():
+        chrom = row['CHROM']
+        pos = row['POS_HG38']
+        df_stage3.loc[index,["POS_HG19"]] = conv38to19[chrom][pos][0][1]
+    df_stage3 = df_stage3[['CHROM', 'POS_HG19', 'ID', 'REF', 'ALT',"STRAND","Gene_API","INFO"]]
+    df_stage3["POS_HG19"] = df_stage3["POS_HG19"].astype(int)
+
 
 # To create a new column with the input needed for requesting in the new API
 for idx, value in df_stage3.iloc[:,2].iteritems():
@@ -668,7 +662,7 @@ for idx, value in df_stage3.iloc[:,8].iteritems():
 # Print results in the terminal
 
 """
-Comparint this results, we have noticed that
+Comperint this results, we have noticed that
 no all variants are in both APIs
 we inform here how manny variants are not found in both
 and then of the variants found in both APIs, 
@@ -678,15 +672,15 @@ how many variants match and how many dont match
 
 # Test results
 
-total_variants = len(df_stage3.index)
-unknow_variants = df_stage3["REF_VariantINFO"].isnull().sum(axis=0)
-print("From the total number of ", total_variants, "variants counted in your VCF file", unknow_variants, "are been not found in the MyVariantINFO API")
+print("From the total number of ",len(df_stage3.index), "variants counted in your VCF file", len(unknow_variants), "are been not found in the MyVariantINFO API")
 df_stage3 = df_stage3.dropna(subset=["REF_VariantINFO"])
-
 if not unknow_variants:
-    print("These variants are: ", unknow_variants)
-
-    
+    pass
+else:
+    print("Variants do not found in MyVariantINFO API are: ", unknow_variants)
 df_stage3["test_comparation"] = np.where(df_stage3["REF"]==df_stage3["REF_VariantINFO"],"OK","ERROR")
+
 ok= df_stage3[df_stage3.test_comparation == "OK"].shape[0]
-print("For the rest the variants found in both APIs the ",(total_variants/ok)*100,"% of them match in both APIs.")
+print("For the rest the variants found in both APIs the ",(len(df_stage3)/ok)*100,"% of them match in both APIs.")
+
+
