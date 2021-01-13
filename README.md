@@ -67,7 +67,9 @@ If you can read the content of the folder CSVtoVCF, that means you are in the ri
 
  ### Testing and issues.
 
-We need to speak here how we have test the code...
+A test is running at the end of the script. The costumer is informed when convertion is done so that their dont need to wait is test is not needed. 
+
+The test used the output generated in the VCF and makes new request by using a different API. We have decided to use MyVariantINFO API. We compare some values between both API is they match we considerar that this variant is correct.
 
 If you find any issue running this programme, please let us know in [Github issues](https://github.com/Manuel-DominguezCBG/Igor-Manuel/issues) and we will try to help you. The same, if you have any idea or suggestion or you would like to join our team, contact with us. 
 
@@ -76,24 +78,55 @@ If you find any issue running this programme, please let us know in [Github issu
 
 This programme creates 2 files:
 
- - A VCF file. This document will looks like that
+ - A VCF file. This document will looks like that:
  
  ```sh
  ##fileformat=VCFv4.2
 ##fileDate=20090805
 #CHROM POS ID REF ALT QUAL FILTER INFO FORMAT NA00001 NA00002 NA00003
 20 14370 rs6054257 G A 29 PASS NS=3;DP=14;AF=0.5;DB;H2 GT:GQ:DP:HQ 0|0:48:1:51,51 1|0:48:8:51,51 1/1:43:5:.,.
-20 17330 . T A 3 q10 NS=3;DP=11;AF=0.017 GT:GQ:DP:HQ 0|0:49:3:58,50 0|1:3:5:65,3 0/0:41:3
+20 17330. T A 3 q10 NS=3;DP=11;AF=0.017 GT:GQ:DP:HQ 0|0:49:3:58,50 0|1:3:5:65,3 0/0:41:3
 20 1110696 rs6040355 A G,T 67 PASS NS=2;DP=10;AF=0.333,0.667;AA=T;DB GT:GQ:DP:HQ 1|2:21:6:23,27 2|1:2:0:18,2 2/2:35:4
  ```
 We are followed the last recommendations of how a VCF must be created. This recommendation can be read  [here]((https://samtools.github.io/hts-specs/VCFv4.2.pdf).
 
  - A html file with errors found in the input such us genes names that do not match with the API requestes, errors found in the coordinates or when Emsembl API or our script do not recognise the variant ID. This document is self explanatory, however we provide here extra explanation. This document inform first if your variants are been retrieved in the VEP API successfully (marked in green colour ), if the variant requested provided a error, this variant is marked in red and third, if the script doesn't recognise the variant ID, we are not able to request this variant, and it is marked in orange color.
 
+### Development and learning
+
+Our first reflection is that this project is more complex than we originally thought. The different amount of variants ID made it impossible to recognize all of them in one script. To achieve this in future versions, we need to think first about the organisation of the programme. At this point of our compression in programming, we think that the best approach would be to split the code in many scripts resolving problem by problem and keep develop.
+
+The second challenge we have faced during this project has been the diversity of input we have seen. Clinical scientists not only used different variant ID but also CSV with different structures. This forced us to restart writing the script trying to recognise as many as possible differences inputs.
+
+In my lab, I took the opportunity of showing our progress to clinical scientists (professionals without a bioinformatics background). Another difficulty I have noticed is that people that don´t understand programming, sometimes ask things that look easy for them but then put in practice is really difficult to apply. For example indel variants. Originally sounds easy to add this type of variant in our repertory of recognizable variants, but when you think how this can be done, many problems emerge.
+
+Another element that brought us many hours of work was the modules. Normally when you run this program on different computers, we noticed that on one computer some modules need to be installed in another computer with another characteristic need to install other modules. To solve this we write a code that checks if all modules need are installed if one of them is not installed, we install the module, and then we import all them. This is not an easy thing especially when we want to avoid that the user interacts with the terminal. We have been thinking about it and we will try to run a new env with the moduled we need first and then run the script. Still thinking about this issue.
 
 
-License
+### License
+
+During the development of this first version, this repository has be privated. As soon as this project will be evaluated, this will be free code. See License below.
+
+MIT License
+
+Copyright (c) [2021] [Igor Malashchuk and Manuel Dominguez]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ----
-
-
-Create new envirtment not installed modules
