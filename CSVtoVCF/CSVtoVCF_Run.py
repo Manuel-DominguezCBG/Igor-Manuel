@@ -1,12 +1,22 @@
 #!/usr/bin/env python
 # coding: utf-8 
 
-# Let's import all modules used in this script:
+
+# Readme document is available in this link
+# https://github.com/Manuel-DominguezCBG/Igor-Manuel
 
 
+# Import Modules
+"""
+The idea of this first version is to create a script tha can be used
+by the costumer by using the terminal. We have adapt this script to install
+the needed modules by itself.
+
+Note: Considering in the future to create a new env with the needed modules
+intead of install the modules in the computer of the user.
+"""
 import os
 import subprocess
-
 try:
     exec("import Cython")
 except:
@@ -23,50 +33,55 @@ import pandas as pd
 import numpy as np
 import inspect
 from datetime import date
-#from pathlib import Path
 import jinja2
-# For some reason requests did not work sometimes when testing our script in a new env
 import requests
 from liftover import get_lifter
 from Bio import Entrez, SeqIO
 
-# To make clear the interection user-cumputer
-# Let´s delete one warning 
-warnings.filterwarnings("ignore")
-#################################################################################
 
-# Let's read input
-# This read the file located in the folder input
+# Removing warnings
+"""
+One long warning is generated during the execution, 
+to make the interaction costumer-computer easier
+we dont show this warning
+"""
+warnings.filterwarnings("ignore")
+
+# Reading imput
+"""
+The costumer only need to leave the .csv file in the folder "input"
+Output can be found in "output" folder.
+"""
 actual_path = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
-#(os.path.dirname(os.path.realpath('CSVtoVCFv3.py')))
 folder_input = '/input/'
 folder_output = '/output/'
-
 input_file_name = os.listdir(actual_path+folder_input)
 input_file_name= ''.join(input_file_name)
 conv38to19 = get_lifter('hg38', 'hg19')
-
 CSV_input = actual_path+folder_input+input_file_name
-#COVERSHEET_TEMPLATE = actual_path+'/Lib/test_report_template.html'
 
 
-# input to data frame
-
-# To avoid UnicodeDecodeError: 'utf-8'
+# Convertion input into panda data frame
+"""
+In case the costumer don´t save the input in the righ format
+UnicodeDecodeError: 'utf-8' can occur.
+Next lines identify the encoding and open in input in the format
+This doesnt work always. That is the reason we recommend to save the input file
+in .csv format.
+"""
 with open(CSV_input, 'rb') as f:
     result = chardet.detect(f.read())
-
-#  This not work 100% of the times. To avoid UnicodeDecodeError: 'utf-8'
-# We strongly recommend that the input be .csv
-
 df = pd.read_csv(CSV_input, encoding=result['encoding'])
-
-# We will need a extra copy to avoid repetitions
 df = df.rename(columns=str.upper)
 df_draft = df
 
 
-
+# Gh37 or 38
+"""
+Our script is able to work with GH 37 or 38.
+In the execution, we ask the user the genome building used
+We also provide the coordinates results in both buildings.
+"""
 if bool("GENE" in df.columns) == True and bool("COORDINATES" in df.columns) == True:
     is_stage2 = 'YES'
     # Select input genome build for the CSV file
@@ -101,6 +116,13 @@ while Entrez_ID.find('@')==-1:
 if Entrez_ID.find('@')>0:
     print('You entered: ' + Entrez_ID)
 
+
+
+
+# HTML template
+"""
+Netx 2 def are create to get the html templates from google drive
+"""
 def get_html_gdrive(ID):
     URL = "https://drive.google.com/uc?export=download"
     session = requests.Session()
@@ -109,7 +131,6 @@ def get_html_gdrive(ID):
     if token:
         params = { 'id' : ID, 'confirm' : token }
         response = session.get(URL, params = params, stream = True)
-    #response = response.iter_content(32768)
     return re.sub('[\r\t]','', response.text)
 def get_confirm_token(response):
     for key, value in response.cookies.items():
@@ -118,17 +139,16 @@ def get_confirm_token(response):
     return None
 html_template = get_html_gdrive('15djn2ZyaaYm9lIlupQ_9J_od9g4eC_-m')
 
-# Reading CSV file values and looking for variants IDs
-
-# Our programme recognise e.g AGT:c.803T>C, ENST00000003084:c.1431_1433delTTC and rs17289390)
-
+# Looking for variants ID in the input
+"""
+Next lines recognise the variants ID and neccesary information
+from the imput to perform the API request later
+"""
 def find_trans(data_frame):
     pattern = re.compile('(:c.)|(rs\d+)')
     return data_frame[data_frame.apply(lambda x: x.str.contains(pattern))].dropna(how='all').dropna(axis=1, how='all')
-
 Transcript = find_trans(df)
 
-# Now, we save the results found in a dict key=index and value=variand ID
 if Transcript.empty == False:
     ind = Transcript.index.to_list()
     vals = list(Transcript.stack().values)
@@ -139,12 +159,12 @@ if Transcript.empty == False:
         # This will be done in df_draft
         df_draft = df_draft.drop(index)
 
-#print('Is the DataFrame empty? ', df_draft.empty)
-# df_draft empty means every row contained a rs or :c. ID
-# print('Is the DataFrame empty? ', df_draft.empty)
 
-
-
+# API request
+"""
+We made used of Emsembl VEP API
+to identify variants
+"""
 def get_API(transcripts, data_frame):
     df2 = data_frame
     df2['exist'] = ''
@@ -160,7 +180,6 @@ def get_API(transcripts, data_frame):
         trans1 = ':c.'
         trans2 = 'rs'
         if trans1 in transcript:
-            #r = requests.get(server1 + transcript, headers={"Content-Type": "application/json"})
             r = requests.get(server1 + transcript + interrogation + server_end)
             if r.status_code == 200:
                 decoded[row] = r.json()
@@ -169,7 +188,6 @@ def get_API(transcripts, data_frame):
             else:
                 df2['exist'][row] = 'NO'
         elif trans2 in transcript:
-            #r = requests.get(server2 + transcript + interrogation, headers={"Content-Type": "application/json"})
             r = requests.get(server2 + transcript + interrogation + server_end)
             if r.status_code == 200:
                 decoded[row] = r.json()
@@ -183,8 +201,14 @@ def get_API(transcripts, data_frame):
     return decoded, df2, trans_df
 
 decoded, df_exist, trans_df = get_API(row2Transcript, df)
-#trans_df2 = trans_df[~trans_df.ID.str.contains('^$')]
-##### GENERATE Table with API request errors ####
+
+# GENERATE Table with API request errors #
+"""
+We generare a html file in which we inform if variant is found in the API
+and if the variant is the kind of variant ID we recognise
+then we compare the gene_symbol and the coordinates and inform the user
+the results that dont match
+"""
 
 #### This function adds colour highlights to rows where variant has been succesfully retrievd from the API or not
 def highlight_error(s, num_columns):
@@ -200,7 +224,10 @@ def highlight_error(s, num_columns):
 style1 = df_exist.style.apply(highlight_error, num_columns=len(df_exist.columns), axis=1)
 df_html = style1.render()
 
-# This function adds the data frame to the html template
+# Generate report
+"""
+This function adds the data frame to the html template
+"""
 def generate_report(html_results_table, html_template):
     todays_date = date.today().strftime('%d/%m/%Y')
     html_text = jinja2.Template(html_template)
@@ -215,8 +242,7 @@ def generate_report(html_results_table, html_template):
 html_file = generate_report(df_html, html_template)
 
 # Let's add gene symbol, chromosome, genome location, reference and alteration
-#pattern2 = re.compile('(NO)|(^$)')
-#df_exist2 = df_exist[~df_exist.exist.str.contains(pattern2)]
+
 def  get_location(decoded, transcripts):
     column_names = ['CHROM', 'POS_START', 'POS_END', 'ID']
     df_location = pd.DataFrame(columns=column_names)
@@ -232,13 +258,11 @@ def  get_location(decoded, transcripts):
             df_location.loc[i, 'POS_START'] = start
             df_location.loc[i, 'POS_END'] = end
         df_location.loc[i, 'CHROM'] = trans[0]["seq_region_name"]
-
         df_location.loc[i, 'ID'] = transcripts.loc[i, 'ID']
     return df_location
 
 df_location = get_location(decoded, trans_df)
 
-     # Always tell NCBI who you are
 
 # Call Entrez to retrieve sequence in fasta format
 def call_Entrez(chrom_ID, start, end, Entrez_ID):
@@ -256,7 +280,7 @@ def stage1(decoded, df_location, Entrez_ID):
                    "17": "CM000679.2", "18": "CM000680.2", "19": "CM000681.2", "20": "CM000682.2",
                    "21": "CM000683.2", "22": "CM000684.2", "X": "CM000685.2", "Y": "CM000686.2",
                    "M": "MF737176", "MT": "MF737176"}
-    #column_names = ["Gene_API", 'CHROM', 'POS_HG38', 'POS_HG19', 'ID', 'REF', 'ALT', 'STRAND', 'QUAL', 'FILTER', 'INFO']
+
     column_names = ["Gene_API", 'CHROM', 'POS_HG38', 'POS_HG19', 'ID', 'REF', 'ALT', 'STRAND']
     df_stage1 = pd.DataFrame(columns=column_names)
     # extract specific data from API and data frame into new data frame
@@ -323,24 +347,15 @@ def stage1(decoded, df_location, Entrez_ID):
                 df_stage1.loc[i, 'REF'] = ref4_seq
                 df_stage1.loc[i, 'ALT'] = ref4_seq[0]
                 df_stage1.loc[i, 'POS_HG38'] = start - 1
-                #update_position2 = conv38to19[df_location.loc[i, 'CHROM']][(df_location.loc[i, 'POS_START'] + 1)]
-                #df_stage1.loc[i, 'POS_HG19'] = update_position2[0][1]
+                
             else:
                 df_stage1.loc[i, 'REF'] = ref3
                 df_stage1.loc[i, 'ALT'] = alt3
                 df_stage1.loc[i, 'POS_HG38'] = start
             # For REFERENCE SEQUENCE
-            #df_stage1.loc[i, 'REF'] = "".join(complement[c] for c in ref2)[::-1]
-            # For Variant Sequence
-            #df_stage1.loc[i, 'ALT'] = "".join(complement[d] for d in alt2)[::-1]
+      
             df_stage1.loc[i, 'STRAND'] = '-'
-        # For ID
-
-    #df_stage1['ID'] = data_frame[["Transcript"]].copy()
-        # For Quality
-    #df_stage1['QUAL'] = data_frame[["Quality"]].copy()
-        # For Quality
-    #df_stage1['FILTER'] = data_frame[["Filter"]].copy()
+      
     return df_stage1
 
 
@@ -359,31 +374,13 @@ def get_hg19(df):
 df_stage1 = get_hg19(df_stage1)
 
 
-############ End of the STAGE 1 ######################
-
-
-# Stage 2
-
-# First, let's prepare where our information file is going to be create.
-
-# Introce in path the directory where we wish to create the new CVF
-# save_path = '/Users/manolodominguez/Desktop/git-repos/STP_mini_projects/Igor-Manuel/Outputs'
-# save_path = '/Users/Igor/Google Drive/Clinical_Bioinformatics_STP/Igor-Manuel_Project/Outputs'
-# Introduce in name, the name of your new file
 
 
 txt_file = "CSVtoVCF_ErrorReport.html"
 
 output_inform = actual_path + folder_output + txt_file
 
-# This will  create directory + file name
-# completeName = os.path.join(save_path, name_of_file + ".txt")
-
-# To compare input with API result
-# We need to create a new column from CHROM + ':' + POS
-
-#df_stage1 = df_stage1.applymap(str)
-
+# To decide the genome building used by the costumer
 def get_genome(data_frame, genome):
     df_stage1 = data_frame.applymap(str)
     if genome == 'a':
@@ -394,10 +391,8 @@ def get_genome(data_frame, genome):
 
 def get_stage2(df_stage1, df_filtered, genome):
     df_stage1_final = get_genome(df_stage1, genome)
-#df_stage1['Location'] = df_stage1['CHROM'].str.cat(df_stage1['POS'], sep=':')
 
     df_comparation = pd.concat([df_filtered[['GENE', 'COORDINATES']], df_stage1_final[['ID', 'Gene_API', 'Location']]], axis=1)
-# df_comparation = df_comparation.set_index("Transcript")
 
 # New two columns as result of the comparation
     df_comparation['result1'] = np.where(df_comparation.iloc[:, 0] == df_comparation.iloc[:, 3], 'OK', 'ERROR')
@@ -420,7 +415,7 @@ def gene_loc_error(html_file, location_error, gene_error):
     gene2gene_API = gene_error.set_index('ID').T.to_dict('list')
 
     # If there is not any mismatch found, one document will be created saying
-    No_error_found = 'Congratulation, no errors have been found in your CSV with regard to gene symbol and location\n'
+    No_error_found = 'Congratulation, no errors have been found in your CSV with regard to gene_symbol and location\n'
     # If there are mismathes found, one document will be created saying
     Errors_found = 'If you are reading this message, then the CSVtoVCF application detected some error(s) or mismatch(s) in the Gene Symbol and/or the location of your variants as compared to data retrieved from API Emsembl (VEP).\n Below the differences found are shown.\n\n'
     # Plus the mismatch
@@ -451,8 +446,8 @@ def gene_loc_error(html_file, location_error, gene_error):
     header_gene_symbol = '<th class="col_heading level0 col0" >Your Gene_symbol</th> <th class="col_heading level0 col1" >Variant</th>  <th class="col_heading level0 col2" >API Gene_symbol</th>'
 
 
-    location_title = "############# LOCATION'S MISMATCH(S) ############## \n\n"
-    gene_title = "\n\n############# GENE_SYMBOL'S MISMATCH(S) #############\n\n"
+    location_title = "#####LOCATION'S MISMATCH(S) ###### \n\n"
+    gene_title = "\n\n##### GENE_SYMBOL'S MISMATCH(S) #######\n\n"
 
 # Here we introduce a condition, if dicts are empty
 # write No_error_found
@@ -519,9 +514,7 @@ if is_stage2 == 'YES':
     with open (output_inform, 'w') as out:
         out.write(html_final)
 
-#  End of stage 2
 
-#################### Skip stage two #######################
 
 # get error report as html file html file
 def finish_html(html_file):
@@ -541,36 +534,7 @@ if is_stage2 == 'NO':
 
 
 
-# # STAGE 3
 
-# The VCF create for us follow the  structure explained in https://samtools.github.io/hts-specs/VCFv4.2.pdf
-# We have created the minimum structure that a VCF document must have
-# according to documentation (VCFv4.3 format)
-
-# An example here
-
-#      ##fileformat=VCFv4.3
-#      #CHROM POS      ID         REF   ALT    QUAL  FILTER   INFO
-#      20     14370    rs6054257  G     A      29    PASS    NS=3;DP=14;AF=0.5;DB;H2
-
-# Here we explain how we are going to fill the columns of the  VCF file.
-
-### Mandatory columns ###
-# CHROM taken from df_stage1['CHROM']
-# POS taken from df_stage1['POS']
-# ID taken df_stage1['ID']
-# REF taken from df_stage1['REF']
-# ALT taken from df_stage1['ALT']
-# QUAL taken from df_stage1['QUAL']
-# FILTER taken from df_stage1['FILTER']
-# INFO filled with (‘.’)
-
-# First, let's create a empty document in the same directory
-
-# Introce in path the directory where we wish to create the new CVF
-# save_path = '/Users/manolodominguez/Desktop/git-repos/STP_mini_projects/Igor-Manuel/Outputs'
-
-# Select which genome build to produce the  VCF file in
 
 
 
@@ -635,3 +599,94 @@ print('Your files are ready!')
 
 
 
+
+
+# TESTING #
+print("Running the test...\n")
+print("This test takes the results generated in the output VCF performs a new request in an different API. \n For a variant given If some of its results matched in both APIs, we asummed that this variant is correct.\n")
+
+"""
+To compare our results, the REF values generated in the Emsembl API 
+are compared with another API called MyVariantINFO.
+"""
+
+# To create a new column with the input needed for requesting in the new API
+for idx, value in df_stage3.iloc[:,2].iteritems():
+    if ">" in value:
+        df_stage3.loc[idx, ["TEST"]] = "chr"+ df_stage3.loc[idx, ["CHROM"]][0].astype(str)+ ":g." + df_stage3.loc[idx, ["POS_HG19"]][0].astype(str) + df_stage3.loc[idx, ["REF"]][0] + ">" + df_stage3.loc[idx, ["ALT"]][0]
+    if "ins" in value: 
+        df_stage3.loc[idx, ["TEST"]] = "chr"+ df_stage3.loc[idx, ["CHROM"]][0].astype(str)+ ":g." + df_stage3.loc[idx, ["POS_HG19"]][0].astype(str) + "_" + ((len(df_stage3.loc[idx,["ID"]].apply(lambda x: x.split("ins")[1])[0]) + df_stage3.loc[idx, ["POS_HG19"]][0]).astype(str)) + "ins" + df_stage3.loc[8,["ID"]].apply(lambda x: x.split("ins")[1])[0]
+    if "del" in value:
+        df_stage3.loc[idx, ["TEST"]] = "chr"+ df_stage3.loc[idx, ["CHROM"]][0].astype(str)+ ":g." + df_stage3.loc[idx, ["POS_HG19"]][0].astype(str) + "_" + ((len(df_stage3.loc[idx,["ID"]].apply(lambda x: x.split("del"))[0][1]) + df_stage3.loc[idx, ["POS_HG19"]][0]).astype(str)) + "del" 
+    if "rs" in value:
+        df_stage3.loc[idx, ["TEST"]] = df_stage3.loc[idx, ["ID"]][0]
+        
+
+# Requesting
+server_rs = "http://myvariant.info/v1/query?q="
+server = 'http://myvariant.info/v1/variant/'
+
+unknow_variants = list()
+print("Variants do not found in this second API (MyVariantAPI): ")
+for idx, value in df_stage3.iloc[:,8].iteritems():
+    if ':g.' in value and ">" in value:
+        r = requests.get(server+ (df_stage3.loc[idx, ["TEST"]][0]))
+        if r.status_code == 404:
+            unknow_variants.append(value)
+        if r.status_code == 200:
+            decoded =  r.json()
+            df_stage3.loc[idx, ["REF_VariantINFO"]] = decoded['vcf']['ref']
+            df_stage3.loc[idx, ["ALT_VariantINFO"]] = decoded['vcf']['alt']
+   
+    if "rs" in value:
+        r = requests.get(server_rs+ (df_stage3.loc[idx, ["TEST"]][0]))
+        if r.status_code == 404:
+            unknow_variants.append(value)
+        if r.status_code == 200:
+            decoded =  r.json()
+            df_stage3.loc[idx, ["REF_VariantINFO"]] = decoded['hits'][0]['vcf']['ref']
+            df_stage3.loc[idx, ["ALT_VariantINFO"]] = decoded['hits'][0]['vcf']['alt']
+            
+    if ':g.' in value and "del" in value:
+        r = requests.get(server+ (df_stage3.loc[idx, ["TEST"]][0]))
+        if r.status_code == 404:
+            unknow_variants.append(value)
+        if r.status_code == 200:
+            decoded =  r.json()
+            df_stage3.loc[idx, ["REF_VariantINFO"]] = decoded['vcf']['ref']
+            df_stage3.loc[idx, ["ALT_VariantINFO"]] = decoded['vcf']['alt']
+
+    if ':g.' in value and "ins" in value:
+        r = requests.get(server+ (df_stage3.loc[idx, ["TEST"]][0]))
+        if r.status_code == 404:
+            unknow_variants.append(value)
+        if r.status_code == 200:
+            decoded =  r.json()
+            df_stage3.loc[idx, ["REF_VariantINFO"]] = decoded['vcf']['ref']
+            df_stage3.loc[idx, ["ALT_VariantINFO"]] = decoded['vcf']['alt']
+
+# Print results in the terminal
+
+"""
+Comparint this results, we have noticed that
+no all variants are in both APIs
+we inform here how manny variants are not found in both
+and then of the variants found in both APIs, 
+how many variants match and how many dont match
+"""
+
+
+# Test results
+
+total_variants = len(df_stage3.index)
+unknow_variants = df_stage3["REF_VariantINFO"].isnull().sum(axis=0)
+print("From the total number of ", total_variants, "variants counted in your VCF file", unknow_variants, "are been not found in the MyVariantINFO API")
+df_stage3 = df_stage3.dropna(subset=["REF_VariantINFO"])
+
+if not unknow_variants:
+    print("These variants are: ", unknow_variants)
+
+    
+df_stage3["test_comparation"] = np.where(df_stage3["REF"]==df_stage3["REF_VariantINFO"],"OK","ERROR")
+ok= df_stage3[df_stage3.test_comparation == "OK"].shape[0]
+print("For the rest the variants found in both APIs the ",(total_variants/ok)*100,"% of them match in both APIs.")
