@@ -15,6 +15,7 @@ the needed modules by itself.
 Note: Considering in the future to create a new env with the needed modules
 intead of install the modules in the computer of the user.
 """
+
 import os
 import subprocess
 try:
@@ -681,6 +682,6 @@ else:
 df_stage3["test_comparation"] = np.where(df_stage3["REF"]==df_stage3["REF_VariantINFO"],"OK","ERROR")
 
 ok= df_stage3[df_stage3.test_comparation == "OK"].shape[0]
-print("For the rest the variants found in both APIs the ",(len(df_stage3)/ok)*100,"% of them match in both APIs.")
+print("For the rest the variants found in both APIs the ",ok/(len(df_stage3))*100,"% of them match in both APIs.")
 
 
