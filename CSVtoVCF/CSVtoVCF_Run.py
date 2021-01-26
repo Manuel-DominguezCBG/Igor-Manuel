@@ -8,12 +8,18 @@
 
 # Import Modules
 """
-The idea of this first version is to create a script tha can be used
-by the costumer by using the terminal. We have adapt this script to install
-the needed modules by itself.
 
-Note: Considering in the future to create a new env with the needed modules
-intead of install the modules in the computer of the user.
+Because of  we want to avoid  as much as possible any interaction between the costumers 
+(clinical scientists of our lab without strong knowledge in informatics)
+with the computers, we have tried to install all neccesary modules in the same script.
+
+In this script, we import the modules, if one of them are not installed, 
+next lines will install the module
+
+We have tested this in different computers and in new env, and this have worked in all of them.
+
+For future release, we have though that a better idea could be to create a
+requirements.txt file and create and env where we will install the modules 
 """
 
 import os
@@ -44,7 +50,7 @@ from Bio import Entrez, SeqIO
 """
 One long warning is generated during the execution, 
 to make the interaction costumer-computer easier
-we dont show this warning
+we dont show this warning.
 """
 warnings.filterwarnings("ignore")
 
@@ -64,8 +70,10 @@ CSV_input = actual_path+folder_input+input_file_name
 
 # Convertion input into panda data frame
 """
+In the README file, we recommend to save the input as csv format.
 In case the costumer don´t save the input in the righ format
 UnicodeDecodeError: 'utf-8' can occur.
+If this happen, we avoid this issue with the next lines.
 Next lines identify the encoding and open in input in the format
 This doesnt work always. That is the reason we recommend to save the input file
 in .csv format.
@@ -79,9 +87,10 @@ df_draft = df
 
 # Gh37 or 38
 """
-Our script is able to work with GH 37 or 38.
-In the execution, we ask the user the genome building used
-We also provide the coordinates results in both buildings.
+Following the agile methodology, 
+we were aware that different costumers save variants in differents genome build.
+To solve this issue, our script is able to work with GRCh37 and GRCh38.
+In the execution, we ask the user the genome building used.
 """
 if bool("GENE" in df.columns) == True and bool("COORDINATES" in df.columns) == True:
     is_stage2 = 'YES'
@@ -98,7 +107,13 @@ else:
     is_stage2 = 'NO'
 
 
-# Select which genome build to produce the  VCF file in
+# Select which genome build generates in the  VCF file
+
+"""
+We have noticed that if we can identify both genome build
+why not ask to the costumer for in which genome build he/she wish the results
+"""
+
 genome_vcf_out= input('Please select genome build for the VCF file: (a) GRCh37 or (b) GRCh38 ')
 while not (genome_vcf_out == 'a' or genome_vcf_out == 'b'):
     print('Genome build not supported.')
@@ -122,7 +137,8 @@ if Entrez_ID.find('@')>0:
 
 # HTML template
 """
-Netx 2 def are create to get the html templates from google drive
+The document generated to inform about mismatchs and error is an html.
+We have created and template that is taken from our google drive account.
 """
 def get_html_gdrive(ID):
     URL = "https://drive.google.com/uc?export=download"
@@ -142,8 +158,8 @@ html_template = get_html_gdrive('15djn2ZyaaYm9lIlupQ_9J_od9g4eC_-m')
 
 # Looking for variants ID in the input
 """
-Next lines recognise the variants ID and neccesary information
-from the imput to perform the API request later
+Next lines recognise the variants ID and necessary information 
+from the input to perform an API request later
 """
 def find_trans(data_frame):
     pattern = re.compile('(:c.)|(rs\d+)')
@@ -203,16 +219,17 @@ def get_API(transcripts, data_frame):
 
 decoded, df_exist, trans_df = get_API(row2Transcript, df)
 
-# GENERATE Table with API request errors #
+# Generate Table with API request errors #
 """
 We generare a html file in which we inform if variant is found in the API
 and if the variant is the kind of variant ID we recognise
 then we compare the gene_symbol and the coordinates and inform the user
-the results that dont match
+the results that didn't match
 """
 
-#### This function adds colour highlights to rows where variant has been succesfully retrievd from the API or not
 def highlight_error(s, num_columns):
+## This function adds colour highlights to rows where variant has been succesfully retrievd from the API or not
+
     if s.exist == 'YES':
         return ['background-color: #c0ffba']*num_columns
     elif s.exist == 'NO':
@@ -284,7 +301,7 @@ def stage1(decoded, df_location, Entrez_ID):
 
     column_names = ["Gene_API", 'CHROM', 'POS_HG38', 'POS_HG19', 'ID', 'REF', 'ALT', 'STRAND']
     df_stage1 = pd.DataFrame(columns=column_names)
-    # extract specific data from API and data frame into new data frame
+    # Extract specific data from API and data frame into new data frame
     for i in decoded:
         trans = decoded[i]
         # For Gene_symbol
@@ -320,8 +337,7 @@ def stage1(decoded, df_location, Entrez_ID):
                 df_stage1.loc[i, 'REF'] = ref2_seq
                 df_stage1.loc[i, 'ALT'] = ref2_seq[0]
                 df_stage1.loc[i, 'POS_HG38'] = start-1
-                #update_position = conv38to19[df_location.loc[i, 'CHROM']][(df_location.loc[i, 'POS_START'] - 1)]
-                #df_stage1.loc[i, 'POS_HG19'] = update_position[0][1]
+                
             else:
                 df_stage1.loc[i, 'REF'] = ref1
                 df_stage1.loc[i, 'ALT'] = alt1
@@ -364,7 +380,7 @@ df_stage1 = stage1(decoded, df_location, Entrez_ID)
 
 def get_hg19(df):
     """
-    This def converter the coordinates from genome building 39 to 19
+    This def converter the coordinates from genome building 38 to 19 genome build
     """
     for index, row in df.iterrows():
         chrom = row['CHROM']
@@ -578,12 +594,19 @@ df_stage3 = get_vcf_genome(df_stage2, genome_vcf_out)
 df_stage3.to_csv(output_inform,
                  header=None, index=None, sep='\t', mode='a')
 
+# To inform the user that everything is ok
 print('Ta-daa!')
 print('Have a look in the output folder')
 print('Your files are ready!')
 
 
 # TESTING #
+
+"""
+We have introduced an automated test that verify from the VCF file
+if everthing is ok. This need further improvement
+"""
+
 print("Running the test...\n")
 
 
